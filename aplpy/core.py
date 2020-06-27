@@ -621,12 +621,7 @@ class FITSFigure(Layers, Regions):
 
         # If frame == 'sky', find central pixel
         if frame == 'sky':
-            from astropy import units as u
-            from astropy.coordinates import SkyCoord
-            from astropy.wcs.utils import skycoord_to_pixel
-            w = WCS(self._header, naxis=2)
-            centre_sky = SkyCoord(centre[0], centre[1], unit=(u.deg, u.deg))
-            centre_pix = skycoord_to_pixel(centre_sky, w)
+            centre_pix = self.world2pixel(centre[0], centre[1])
         else:
             centre_pix = np.flip(centre)
 
