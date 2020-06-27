@@ -666,24 +666,31 @@ class FITSFigure(Layers, Regions):
                 parallelhdu_new[:,
                 parallelhdu_new.shape[1] - temp_parallel.shape[1]:parallelhdu_new.shape[1]] = temp_parallel
         else:
-            self._data = temp
+            hdu_new = temp
             if parallel_hdu:
                 parallelhdu_new = temp_parallel
+
+        self._data = hdu_new
+        if parallel_hdu:
+            parallel_hdu_centred.data = parallelhdu_new
 
         # Only change the CRPIX if the padding happens BEFORE the current CRPIX
         if shift_y < 0:
             self._header['CRPIX1'] = self._header['CRPIX1'] - 2 * shift_y
+            if parallel_hdu:
+                parallel_hdu_centred.header['CRPIX1'] = parallel_hdu_centred.header['CRPIX1'] - 2 * shift_y
         if shift_x < 0:
             self._header['CRPIX2'] = self._header['CRPIX2'] - 2 * shift_x
-        self._header['NAXIS1'] = hdu_new.shape[1]
-        self._header['NAXIS2'] = hdu_new.shape[0]
+            if parallel_hdu:
+                parallel_hdu_centred.header['CRPIX2'] = parallel_hdu_centred.header['CRPIX2'] - 2 * shift_x
+        self._header['NAXIS1'] = self._data.shape[1]
+        self._header['NAXIS2'] = self._data.shape[0]
+        if parallel_hdu:
+            parallel_hdu_centred.header['NAXIS1'] = parallel_hdu_centred.shape[1]
+            parallel_hdu_centred.header['NAXIS2'] = parallel_hdu_centred.shape[0]
 
         if parallel_hdu:
-            parallelhdu_hdu = fits.PrimaryHDU(parallelhdu_new, self._header)
-            parallelhdu_hdu.header['NAXIS3'] = parallel_hdu_centred.header['NAXIS3']
-
-        if parallel_hdu:
-            return parallelhdu_hdu
+            return parallel_hdu_centred
 
     @auto_refresh
     def trim_image(self, parallel_hdu=None, empty_value=0, pad=0, centre=None, centre_frame='sky', square=False,
